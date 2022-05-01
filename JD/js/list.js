@@ -4,7 +4,6 @@ class List {
     this.getData();
     // 將加入購物車使用事件委託
     this.$('.sk_bd ul').addEventListener('click',this.addCartFn.bind(this))
-
   }
   // 获取数据的方法
   async getData() {
@@ -30,7 +29,7 @@ class List {
     </div>
     剩余<em>${goods.goods_number}</em>件
 </div>
-<a href="#none"  class="sk_goods_buy">立即抢购</a>
+<a href="#none" class="sk_goods_buy">立即抢购</a>
 </li> `
       })
       this.$('.sk_bd ul').innerHTML = html;
@@ -43,8 +42,11 @@ class List {
       // console.log(eve.target);
       //判斷用戶是否登錄,如果能獲取到token則表示登錄.獲取不到表示未登錄
      let token = localStorage.getItem('token');
-     if(!token) location.assign('/login.html')
+    //  跳转页面
+     if(!token) location.assign('/login.html?returUrl=./list.html')
     }
+
+    // 获取节点方法
     $(tag){
       let res=document.querySelector(tag)
       return res.length == 1? res[0] : res;
