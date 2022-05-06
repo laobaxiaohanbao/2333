@@ -1,3 +1,13 @@
+// const { default: axios } = require("axios")
+// const { get } = require("express/lib/response")
+
+// const { default: axios } = require("axios")
+
+// const { default: axios } = require("axios")
+// const { lazyrouter } = require("express/lib/application")
+
+// const { default: axios } = require("axios")
+
 class Cart {
   constructor() {
     this.checkLogin();
@@ -7,8 +17,7 @@ class Cart {
   // 绑定事件
   bindEve() {
     this.$('.cart-list').addEventListener('click', this.distributeEve.bind(this));
-
-    // 给全选按钮绑定事件
+// 给全选按钮绑定事件
     this.$('.cart-th input').addEventListener('click', this.clickAllChecked.bind(this))
   }
 
@@ -23,9 +32,9 @@ class Cart {
     let userId = localStorage.getItem('user_id');
     let { data, status } = await axios.get('http://localhost:8888/users/info/' + userId);
     // console.log(data);
-
-    // 如果没有token肯定没有登录
-    if (!TOKEN || data.code == 401) {
+ // 如果没有token没有登录
+    // 如果没有token肯定没有登  
+      if (!TOKEN || data.code == 401) {
       location.assign('./login.html?ReturnUrl=./cart.html')
     }
   }
@@ -37,14 +46,17 @@ class Cart {
     axios.defaults.headers.common['authorization'] = TOKEN;
     let { data, status } = await axios.get('http://localhost:8888/cart/list?id=' + userId);
     if (status == 200) {
+                  // console.log(res);
       // 判断是否超过有效期,过期则跳转到登录页面
       if (data.code == 401) location.assign('./login.html?ReturnUrl=./cart.html')
+
       // 判断接口的状态
       if (data.code == 1) {
         let html = '';
-        // console.log(data.cart);
+        console.log(data.cart);
         data.cart.forEach(goods => {
-          html += `<ul data-id="${goods.goods_id}" class="goods-list yui3-g">
+          html += `
+          <ul data-id="${goods.goods_id}" class="goods-list yui3-g">
           <li class="yui3-u-3-8 pr">
               <input type="checkbox" class="good-checkbox">
               <div class="good-item">
@@ -77,7 +89,8 @@ class Cart {
               </div>
               <div>移到我的关注</div>
           </li>
-      </ul>`;
+      </ul>
+      `
         });
 
         this.$('.cart-list').innerHTML = html;
@@ -102,9 +115,9 @@ class Cart {
     }
     // 判断点击是否为单个商品的选中按钮
     if (target.classList.contains('good-checkbox')) {
-      // console.log(target);
+              // console.log(target);
       this.getOneGoodsCheck(target);
-      // 统计商品数量和价格的方法
+         // 统计商品数量和价格的方法
       this.getNumPriceGoods()
     }
   }
@@ -112,7 +125,7 @@ class Cart {
   delGoods(target) {
     let that = this;
     //确认是否删除
-    let layerIndex = layer.confirm('你要残忍抛弃我吗?', {
+    let layerIndex = layer.confirm('刪除嗎?', {
       title: '删除提示'
     }, function () {
       // console.log('确定了...');
@@ -134,14 +147,14 @@ class Cart {
             // 关闭确认框
             layer.close(layerIndex);
             // 提示删除成功
-            layer.msg('商品删除成功');
+            layer.msg('删除成功');
             //在页面中删除节点
             ulObj.remove();
             // 统计商品数量和价格的方法
             // console.log(this);
             that.getNumPriceGoods()
           }
-
+          
         });
     })
   }
@@ -149,13 +162,10 @@ class Cart {
   // 单个商品的选中按钮的回调
   getOneGoodsCheck(target) {
     //如果是取消,则直接让全选取消
-    // console.log(target.checked);
     if (!target.checked) {
       this.$('.cart-th input').checked = false;
       return;
     }
-
-    // console.log(target.checked);
     // 如果点击的是选中,则返回true
     if (target.checked) {
       // 选中页面中,没有被选中的商品
@@ -168,7 +178,7 @@ class Cart {
 
       });
       // console.log(res);
-      // 如果返回undefined,则是页面中都被选中
+       // 如果返回undefined,则是页面中都被选中
       if (!res) this.$('.cart-th input').checked = true;
 
     }
@@ -223,7 +233,7 @@ class Cart {
 
   // 设置单个商品的选中状态
   oneGoodsCheck(checkStatus) {
-    let goodsList = this.$('.goods-list');
+    let goodsList = document.querySelectorAll('.goods-list');
     // console.log(goodsList, checkStatus);
     goodsList.forEach(ul => {
       // console.log(ul);

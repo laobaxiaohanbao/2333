@@ -1,85 +1,74 @@
- // 1 获取节点
- const boxObj = document.querySelector('#box'),
- smallObj = boxObj.firstElementChild,
- maskObj = smallObj.lastElementChild,
- bigObj = document.querySelector('#big'),
- bigImg = bigObj.lastElementChild;
-
-// 2 绑定鼠标移入事件
-
-smallObj.onmouseenter = function () {
- // 2-1 显示小黄块和大图
- maskObj.style.display = 'block';
- bigObj.style.display = 'block';
+class Zoom {
+  constructor(smallbox, move, bigbox, moveImg) {
+      this.smallbox = smallbox
+      this.move = move
+      this.bigbox = bigbox
+      this.moveImg = moveImg
+      this.maxMoveSizeX = 0
+      this.maxMoveSizeY = 0
+      this.init()     
+  }
+  init(){
+      this.zoomMoveOut()
+      this.zoomMove()
+  }
+  setMoveSize(){
+      // 移动盒子的大小 = 大盒子/图片大小*小盒子
+      this.move.style.width = this.bigbox.clientWidth/this.moveImg.clientWidth*this.smallbox.clientWidth + "px"
+      this.move.style.height = this.bigbox.clientHeight/this.moveImg.clientHeight*this.smallbox.clientHeight + "px"
+      this.maxMoveSizeX = this.smallbox.clientWidth - this.move.clientWidth 
+      this.maxMoveSizeY = this.smallbox.clientHeight - this.move.clientHeight
+  }
+  zoomMoveOut(){
+      // 初始化 移入遮罩层
+      this.smallbox.onmouseenter = () => {
+          this.move.style.display = "block"
+          this.bigbox.style.display = "block"
+          this.setMoveSize()
+      }
+      
+      this.smallbox.onmouseleave = () => {
+          this.move.style.display = "none"
+          this.bigbox.style.display = "none"
+      }
+  }
+  zoomMove(){
+      // 给移动那个的盒子加移动事件
+      this.smallbox.onmousemove = (e) => {
+          e = e || window.event
+          /* // 获取鼠标在小盒子里面的位置
+          let moveX = e.clientX - this.smallbox.offsetLeft
+          let moveY = e.clientY - this.smallbox.offsetTop
+          // 在事件中移动鼠标控制移动的盒子位置改变
+          // 鼠标在move中心点的位置
+          let centerX = this.move.clientWidth / 2
+          let centerY = this.move.clientHeight / 2 */
+          // 鼠标在遮罩层里面的位置
+          let targetX = e.clientX - this.smallbox.offsetLeft - this.move.clientWidth / 2
+          let targetY = e.clientY - this.smallbox.offsetTop - this.move.clientHeight / 2
+          /* // 区间判断 全局变量 不会在拖拽时变化，抽取为全局
+          let maxMoveSizeX = this.smallbox.clientWidth - 2 - this.move.clientWidth
+          let maxMoveSizeY = this.smallbox.clientHeight - 2 - this.move.clientHeight */
+          if (targetX < 0) targetX = 0
+          if (targetY < 0) targetY = 0
+          if (targetX > this.maxMoveSizeX) targetX = this.maxMoveSizeX
+          if (targetY > this.maxMoveSizeY) targetY = this.maxMoveSizeY
+          this.move.style.left = targetX + "px"
+          this.move.style.top = targetY + "px"
+          //同时控制大盒子里面的图片坐标变化（图片相对于盒子移动所以要乘以-1）
+          this.moveImg.style.left = targetX * this.moveImg.clientWidth / this.smallbox.clientWidth * -1  +"px"
+          this.moveImg.style.top = targetY * this.moveImg.clientHeight / this.smallbox.clientHeight * -1 + "px"
+          // console.log(smallbox.clientWidth / move.clientWidth)
+      }
+  }
 }
-
-// 3 绑定鼠标移出事件
-smallObj.onmouseleave = function () {
- maskObj.style.display = 'none';
- bigObj.style.display = 'none';
-}
-// 获取box相对于body的left和top值
-let boxT = boxObj.offsetTop;
-let boxL = boxObj.offsetLeft;
-
-
-// 4 鼠标移动事件,设置mask跟随鼠标移动
-smallObj.onmousemove = function (eve) {
- // console.log(eve);
- /*
-   mask 父级 small 具有定位属性
-   设置的left和top值,就是相对于small的,不能使用clientX
-
-   当我们将mask的位置设置到鼠标的位置,此时鼠标再移动获取的在元素神圣值,就是相对于mask
-   此时不能使用offsetX/Y 直接设置 
- */
-
- // 4-1 获取鼠标相对于可视区的坐标
- // let cX = eve.clientX;
- // let cY = eve.clientY;
- let cX = eve.pageX;
- let cY = eve.pageY;
- // console.log(cX, cY);
- // 默认mask的属性是display为none,获取不到.获取mask的宽度和高度
- let maskW = maskObj.offsetWidth;
- let maskH = maskObj.offsetHeight;
- // console.log(maskH, maskW);
- // 4-2 计算mask的坐标
- let maskL = cX - boxL - maskW / 2;
- let maskT = cY - boxT - maskH / 2;
- // console.log(maskL, maskT);
- // 4-3 计算mask的边框
- // 判断是否超出上和左边界
- if (maskL < 0) maskL = 0
- if (maskT < 0) maskT = 0
-
- // 计算最大值,不能从右边和下边出去
- let maxMaskL = smallObj.offsetWidth - maskW;
- let maxMaskT = smallObj.offsetHeight - maskH;
- // console.log(maxMaskL, maxMaskT);
- if (maskL > maxMaskL) { maskL = maxMaskL }
- if (maskT > maxMaskT) maskT = maxMaskT
-
- // 将值 设置给 mask
- maskObj.style.left = maskL + 'px'
- maskObj.style.top = maskT + 'px'
-
- /*
-  小黄块和大图的关系
-
-  小黄块的实时left/小黄块移动的最大left  = 大图的实时位置left/ 大图能移动的最大left值
- 
- */
-
- //5 计算大图能够移动的最大left和top值
- let bigMaxLeft = bigImg.offsetWidth - bigObj.offsetWidth;
- let bigMaxTop = bigImg.offsetHeight - bigObj.offsetHeight;
-
- // 5-1 计算大图的实时位置
- let tmpBigImgLeft = maskL / maxMaskL * bigMaxLeft;
- let tmpBigImgTop = maskT / maxMaskT * bigMaxTop;
-
- // 5-2 设置大图的位置
- bigImg.style.left = -tmpBigImgLeft + 'px';
- bigImg.style.top = -tmpBigImgTop + 'px';
-}
+// 获取小盒子
+let smallbox = document.getElementsByClassName('preview_img')[0]
+// 获取移动的盒子
+let move = document.getElementsByClassName('mask')[0]
+// 获取大盒子
+let bigbox = document.getElementsByClassName('big')[0]
+// 获取大盒子里面的图片
+let moveImg = document.querySelector('.big>img')
+let p = new Zoom(smallbox, move, bigbox, moveImg)
+// 给小盒子移入事件 移动的盒子显示

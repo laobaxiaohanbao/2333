@@ -1,9 +1,13 @@
+// const { default: axios } = require("axios");
+// const { lazyrouter } = require("express/lib/application");
+
+
 class List {
   constructor() {
     // 给属性赋值，调用其他方法
     this.getData();
     // 將加入購物車使用事件委託
-    this.$('.sk_bd ul').addEventListener('click',this.addCartFn.bind(this))
+    this.$('.sk_bd ul').addEventListener('click', this.addCartFn.bind(this))
   }
   // 获取数据的方法
   async getData() {
@@ -34,23 +38,59 @@ class List {
       })
       this.$('.sk_bd ul').innerHTML = html;
     }
-    }
+  }
 
-    // 加入購物車方法
-    addCartFn(eve){
-      // console.log(this);
-      // console.log(eve.target);
-      //判斷用戶是否登錄,如果能獲取到token則表示登錄.獲取不到表示未登錄
-     let token = localStorage.getItem('token');
+  // 加入購物車方法
+  async addCartFn(eve) {
+    // console.log(this);
+    // console.log(eve.target);
+    //判斷用戶是否登錄,如果能獲取到token則表示登錄.獲取不到表示未登錄
+    let token = localStorage.getItem('token');
     //  跳转页面
-     if(!token) location.assign('/login.html?returUrl=./list.html')
+    if (!token) location.assign('./login.html?ReturnUrl=./list.html')
+    // 判断是否点击的是A便签
+    if (eve.target.classList.contains('sk_goods_buy')) {
+      // 获取商品ID。
+      let lisObj = eve.target.parentNode;
+      let goodsId = lisObj.dataset.id;
+      // console.log(lisObj);
+      let userId = localStorage.getItem('user_id');
+      // 俩个ID都有才能获取
+      if (!userId || !goodsId) throw new Error('can is noneERROR')
+      axios.defaults.headers.common['authorization'] = token;
+      // 必须设置内容的类型，默认是json格式，是处理不了的
+      axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+      // 数据必须是以原生的方式拼接好
+      let param = `id=${userId}&goodsId=${goodsId}`;
+      // console.log(eve.target);
+      //如果用户登陆，则将数据信息添加到购物车中
+      let {data,status} =await axios.post('http://localhost:8888/cart/add', param)
+      if(status == 200){
+        if(data.code == 1){
+          layer.open({
+            content:'购物成功',
+            btn:['留在这里','去购物车结算'],
+            yes:function(index,layer){
+            //  按钮一回调
+            return location.assign('/list.html')
+            // return false;
+            },
+            btn2:function(index,layer){
+            // 按钮二回调
+            location.assign('/cart.html')
+            }
+          })
+        }
+      }
     }
 
-    // 获取节点方法
-    $(tag){
-      let res=document.querySelector(tag)
-      return res.length == 1? res[0] : res;
-      }
+  }
+
+  // 获取节点方法
+  $(tag) {
+    let res = document.querySelector(tag)
+    return res.length == 1 ? res[0] : res;
+  }
 }
 new List
 
